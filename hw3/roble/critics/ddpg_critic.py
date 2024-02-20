@@ -22,7 +22,8 @@ class DDPGCritic(BaseCritic):
         if isinstance(self._ob_dim, int):
             self._input_shape = (self._ob_dim,)
         else:
-            self._input_shape = agent_params['input_shape']
+            # self._input_shape = agent_params['input_shape'] 
+            self._input_shape = kwargs["input_shape"] # MODIFIED - using kwargs instead of previous agent_params
 
         out_size = 1
 
