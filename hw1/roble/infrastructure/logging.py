@@ -17,6 +17,8 @@ import pickle
 import errno
 import torch
 
+# Load environment variables from .env file
+
 from hw1.roble.infrastructure.tabulate import tabulate
 
 
@@ -70,7 +72,7 @@ def mkdir_p(path):
 class Logger(object):
     import hw1.roble.util.class_util as classu
     @classu.hidden_member_initialize
-    def __init__(self):
+    def __init__(self, comet_experiment=None):
         self._prefixes = []
         self._prefix_str = ''
 
@@ -94,6 +96,7 @@ class Logger(object):
         self._log_tabular_only = False
         self._header_printed = False
         self._comet_log = None
+        self._comet_experiment = comet_experiment
         self._table_printer = TerminalTablePrinter()
 
     def reset(self):
@@ -194,7 +197,8 @@ class Logger(object):
         self._tabular_old[self._tabular_prefix_str + str(key)].append(val)
         if (self._comet_log is not None):
             self._comet_log.log_metrics({str(self._tabular_prefix_str) + str(key): val})
-#             logger.set_step(step=settings["round"])
+        if self._comet_experiment is not None:
+            self._comet_experiment.log_metric(key, val)
 
     def record_dict(self, d, prefix=None):
         if prefix is not None:

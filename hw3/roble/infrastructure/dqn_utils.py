@@ -75,7 +75,7 @@ def get_env_kwargs(env_name):
             'replay_buffer_size': 100_000,
             'batch_size': 32,
             'gamma': 0.99,
-            'learning_starts': 30_000,
+            'learning_starts': 1000,
             'learning_freq': 4,
             'frame_history_len': 1,
             'target_update_freq': 3_000,

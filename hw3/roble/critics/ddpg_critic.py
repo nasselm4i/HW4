@@ -49,7 +49,8 @@ class DDPGCritic(BaseCritic):
         self._q_net.to(ptu.device)
         self._q_net_target.to(ptu.device)
         self._actor = actor
-        self._actor_target = copy.deepcopy(actor) 
+        self._actor_target = copy.deepcopy(actor)
+
 
     def update(self, ob_no, ac_na, next_ob_no, reward_n, terminal_n):
         """
@@ -76,18 +77,29 @@ class DDPGCritic(BaseCritic):
         
         ### Hint: 
         # qa_t_values = self._q_net(ob_no, ac_na)
-        qa_t_values = TODO
+        q_t_values = self._q_net(ob_no, ac_na).squeeze(-1)
         
         # TODO compute the Q-values from the target network 
         ## Hint: you will need to use the target policy
-        qa_tp1_values = TODO
+        q_tp1_values = self._q_net_target(next_ob_no, self._actor_target(next_ob_no)).squeeze(-1)
 
         # TODO compute targets for minimizing Bellman error
         # HINT: as you saw in lecture, this would be:
             #currentReward + self._gamma * qValuesOfNextTimestep * (not terminal)
-        target = TODO
+        # print("terminal_n")
+        # print(terminal_n.shape)
+        # print("q_tp1_values")
+        # print(q_tp1_values.shape)
+        # print("q_tp1_values")
+        # print(q_tp1_values.shape)
+        target = reward_n + self._gamma * q_tp1_values * (1 - terminal_n.float())
+        # print("target")
+        # print(target.shape)
         target = target.detach()
-        
+        # print("reward_n", reward_n.shape)
+        # print("q_t_values.shape == target.shape")
+        # print("q_t_values.shape", q_t_values.shape)
+
         assert q_t_values.shape == target.shape
         loss = self._loss(q_t_values, target)
 
@@ -109,15 +121,17 @@ class DDPGCritic(BaseCritic):
                 self._q_net_target.parameters(), self._q_net.parameters()
         ):
             ## Perform Polyak averaging
-            y = TODO
+            target_param.data.copy_(self._polyak_avg * param.data + (1.0 - self._polyak_avg) * target_param.data)
         for target_param, param in zip(
                 self._actor_target.parameters(), self._actor.parameters()
         ):
             ## Perform Polyak averaging for the target policy
-            y = TODO
+            target_param.data.copy_(self._polyak_avg * param.data + (1.0 - self._polyak_avg) * target_param.data)
 
     def qa_values(self, obs):
-        obs = ptu.from_numpy(obs)
+        # if not isinstance(obs, torch.Tensor):
+        #     obs = ptu.from_numpy(obs)
+        # TODO
         ## HINT: the q function take two arguments  
-        qa_values = TODO
-        return ptu.to_numpy(qa_values)
+        qa_values = self._q_net(obs, self._actor(obs))
+        return qa_values

@@ -39,25 +39,30 @@ class SACCritic(DDPGCritic):
         reward_n = ptu.from_numpy(reward_n)
         terminal_n = ptu.from_numpy(terminal_n)
 
-        qa_t_values = TODO
+        qa_t_values = self._q_net(ob_no, ac_na)
         
         # TODO compute the Q-values from the target network 
         ## Hint: you will need to use the target policy
-        qa_tp1_values = TODO
+        qa_tp1_values = self._q_net_target(next_ob_no, self._actor_target(next_ob_no))
 
         # TODO add the entropy term to the Q-values
         ## Hint: you will need the use the lob_prob function from the distribution of the actor policy
         ## Hint: use the self.hparams['alg']['sac_entropy_coeff'] value for the entropy term
-        qa_tp1_values_reg = TODO
+        # add the entropy term to the Q-values
+        # Assuming self._actor has a method .log_prob that computes log probabilities of actions
+        log_prob_next = self._actor.log_prob(next_ob_no, self._actor_target(next_ob_no))
+        # Assuming self.hparams is a dictionary containing hyperparameters, with 'alg' and 'sac_entropy_coeff' keys
+        entropy_coeff = self.hparams['alg']['sac_entropy_coeff']
+        qa_tp1_values_reg = qa_tp1_values - entropy_coeff * log_prob_next
 
         # TODO compute targets for minimizing Bellman error
         # HINT: as you saw in lecture, this would be:
             #currentReward + self._gamma * qValuesOfNextTimestep * (not terminal)
-        target = TODO
+        target = reward_n + self._gamma * qa_tp1_values_reg * (not terminal_n)
         target = target.detach()
 
-        assert q_t_values.shape == target.shape
-        loss = self._loss(q_t_values, target)
+        assert qa_t_values.shape == target.shape
+        loss = self._loss(qa_t_values, target)
 
         self._optimizer.zero_grad()
         loss.backward()

@@ -153,6 +153,14 @@ class RL_Trainer(RL_Trainer):
 
     def train_agent(self):
         # TODO: get this from hw1 or hw2
+        all_logs = []
+        for train_step in range(self._params["alg"]['num_agent_train_steps_per_iter']):
+            # sample some data from the data buffer
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self._agent.sample(self._params['alg']['train_batch_size'])
+
+            # use the sample data to train an agent
+            train_log = self._agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
+            all_logs.append(train_log)
         return all_logs
 
     ####################################
@@ -248,9 +256,9 @@ class RL_Trainer(RL_Trainer):
             
             if len(actor_loss) > 0:
                 logs["Actor_Loss"] = actor_loss
-            
+
         for key in logs.keys():
-                self._logger.record_tabular_misc_stat(key, logs[key])
+            self._logger.record_tabular_misc_stat(key, logs[key])
                 
         # self._logger.record_tabular_misc_stat("eval_reward", logs["eval_reward"])
         self._logger.dump_tabular()

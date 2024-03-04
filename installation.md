@@ -13,7 +13,6 @@ sudo apt-get install patchelf
 
 ## Install Python Environment
 
-
 There are two options:
 
 A. (Recommended) Install with conda:

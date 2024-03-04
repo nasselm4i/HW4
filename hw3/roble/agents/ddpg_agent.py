@@ -4,6 +4,27 @@ from hw3.roble.infrastructure.dqn_utils import MemoryOptimizedReplayBuffer
 from hw3.roble.policies.MLP_policy import MLPPolicyDeterministic
 from hw3.roble.critics.ddpg_critic import DDPGCritic
 import copy
+import torch
+
+
+class OrnsteinUhlenbeckNoise:
+    "Parameters from https://arxiv.org/pdf/1509.02971.pdf"
+    def __init__(self, size, mu=0, theta=0.15, sigma=0.2, dt=1e-2):
+        self.theta = theta
+        self.mu = mu
+        self.sigma = sigma
+        self.dt = dt
+        self.size = size
+        self.reset()
+
+    def reset(self):
+        self.x_prev = np.zeros(self.size)
+
+    def sample(self):
+        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
+            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.size)
+        self.x_prev = x
+        return x
 
 class DDPGAgent(object):
     
@@ -14,7 +35,17 @@ class DDPGAgent(object):
         self._last_obs = self._env.reset()
         self._cumulated_rewards = 0
         self._rewards = []
-        self._num_actions = self._env.action_space.shape[0]
+        # print("---- INFO ACTION SPACE ----")
+        # print(self._env.action_space.n)
+        # print(self._env.action_space.shape)
+        action_space_shape = self._env.action_space.shape
+        if len(action_space_shape) == 0:
+            # Handle or raise an error for unexpected action space configurations
+            raise ValueError("Action space must have a defined shape for continuous actions.")
+        else:
+            self._num_actions = action_space_shape[0]
+        
+        self.ou_noise = OrnsteinUhlenbeckNoise(size=self._num_actions)
 
         self._replay_buffer_idx = None
         
@@ -47,26 +78,40 @@ class DDPGAgent(object):
         # TODO store the latest observation ("frame") into the replay buffer
         # HINT: the replay buffer used here is `MemoryOptimizedReplayBuffer`
             # in dqn_utils.py
-        self._replay_buffer_idx = -1
-
+        # Modified
+        # self._replay_buffer_idx = -1
+        self._replay_buffer_idx = self._replay_buffer.store_frame(self._last_obs)
+ 
         # TODO add noise to the deterministic policy
-        perform_random_action = TODO
+        # perform_random_action = TODO
         # HINT: take random action 
-        action = TODO
+        
+        noise_sample = self.ou_noise.sample() # Temporal Correlated Noise (Ornstein-Uhlenbeck Process)
+        action = self._actor.forward(self._last_obs)
+        action = action.detach().cpu().numpy()
+
+        # if not isinstance(noise_sample, torch.Tensor):
+        #     noise_sample = torch.tensor(noise_sample, dtype=torch.float32, device=action.device)
+        action = action + noise_sample
+        
         
         # TODO take a step in the environment using the action from the policy
         # HINT1: remember that self._last_obs must always point to the newest/latest observation
         # HINT2: remember the following useful function that you've seen before:
             #obs, reward, done, info = env.step(action)
-        TODO
+        obs, reward, done, info = self._env.step(action)
+
 
         # TODO store the result of taking this action into the replay buffer
         # HINT1: see your replay buffer's `store_effect` function
         # HINT2: one of the arguments you'll need to pass in is self._replay_buffer_idx from above
-        TODO
+        self._replay_buffer.store_effect(self._replay_buffer_idx, action, reward, done)
 
         # TODO if taking this step resulted in done, reset the env (and the latest observation)
-        TODO
+        if done:
+            self._last_obs = self._env.reset()
+            self.ou_noise.reset()
+
 
     def get_replay_buffer(self):
         return self._replay_buffer
@@ -86,20 +131,20 @@ class DDPGAgent(object):
         ):
             # TODO fill in the call to the update function using the appropriate tensors
             log = self._q_fun.update(
-                TODO
+                ob_no, ac_na, next_ob_no, re_n, terminal_n
             )
             
             # TODO fill in the call to the update function using the appropriate tensors
             ## Hint the actor will need a copy of the q_net to maximize the Q-function
             log = self._actor.update(
-                TODO
+                next_ob_no,
+                self._q_fun
             )
 
             # TODO update the target network periodically 
             # HINT: your critic already has this functionality implemented
             if self._num_param_updates % self._target_update_freq == 0:
-                TODO
-
+                self._q_fun.update_target_network()
             self._num_param_updates += 1
         self._t += 1
         return log

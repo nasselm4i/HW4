@@ -1,0 +1,85 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug q1-Running-DQN-MsPacman-v0",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=LunarLander-v3", "env.exp_name=q1", "alg.double_q=false"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q2-DDQN-LunarLander-v3-seed1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=LunarLander-v3", "env.exp_name=q2_dqn_1", "logging.seed=1"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q2-DDQN-LunarLander-v3-seed2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=LunarLander-v3", "env.exp_name=q2_dqn_2", "logging.seed=2"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q2-DDQN-LunarLander-v3-seed3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=LunarLander-v3", "env.exp_name=q2_dqn_3", "logging.seed=3"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q4-DDPG-InvertedPendulum-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=InvertedPendulum-v2", "env.exp_name=q4_ddpg", "alg.rl_alg=ddpg"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q5-DDPG-HalfCheetah-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=HalfCheetah-v2", "env.exp_name=q5_ddpg", "alg.rl_alg=ddpg"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q6-TD3-InvertedPendulum-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=InvertedPendulum-v2", "env.exp_name=q6_td3", "alg.rl_alg=td3"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q7-TD3-HalfCheetah-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=HalfCheetah-v2", "env.exp_name=q7_td3", "alg.rl_alg=td3"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q8-SAC-InvertedPendulum-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=InvertedPendulum-v2", "env.exp_name=q8_sac", "alg.rl_alg=sac"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug q9-SAC-HalfCheetah-v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_hw3_ql.py",
+            "args": ["env.env_name=HalfCheetah-v2", "env.exp_name=q9_sac", "alg.rl_alg=sac"],
+            "console": "integratedTerminal"
+        }
+    ]
+}

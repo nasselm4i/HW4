@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 import json
 
+
+import nose
 import hydra, json
 from omegaconf import DictConfig, OmegaConf
 

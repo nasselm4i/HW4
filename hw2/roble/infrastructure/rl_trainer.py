@@ -40,6 +40,10 @@ class RL_Trainer(RL_Trainer):
 
         ob_dim = self._env.observation_space.shape if img else self._env.observation_space.shape[0]
         ac_dim = self._env.action_space.n if self._params['alg']['discrete'] else self._env.action_space.shape[0]
+        print(self._env)
+        # print("ac_dim = self._env.action_space.n if self._params['alg']['discrete'] else self._env.action_space.shape[0]")
+        # print(ac_dim)
+        # print("self._env.action_space.n", self._env.action_space.n)
         self._params['alg']['ac_dim'] = ac_dim
         self._params['alg']['ob_dim'] = ob_dim
 

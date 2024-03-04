@@ -1,18 +1,30 @@
 from collections import OrderedDict
 import numpy as np
 import time
+import os
+
+from comet_ml import Experiment
 
 import gym
 import torch, pickle
 from omegaconf import DictConfig, OmegaConf
 
+
 from hw1.roble.infrastructure import pytorch_util as ptu
 from hw1.roble.infrastructure.logging import Logger as TableLogger
 from hw1.roble.infrastructure import utils
 
+
+from dotenv import load_dotenv
+
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 1
-MAX_VIDEO_LEN = 40  # we overwrite this in the code below
+MAX_VIDEO_LEN = 200  # we overwrite this in the code below
+
+load_dotenv()
+COMET_API_KEY = os.getenv("COMET_API_KEY")
+COMET_PROJECT_NAME = os.getenv("COMET_PROJECT_NAME")
+COMET_WORKSPACE = os.getenv("COMET_WORKSPACE")
 
 
 class RL_Trainer(object):
@@ -26,7 +38,8 @@ class RL_Trainer(object):
 
         # Get params, create logger, create TF session
         # self._logger = Logger(self._params['logging']['logdir'])
-        self._logger = TableLogger()
+        experiment = Experiment(api_key=COMET_API_KEY, project_name=COMET_PROJECT_NAME, workspace=COMET_WORKSPACE)
+        self._logger = TableLogger(comet_experiment=experiment)
         self._logger.add_folder_output(folder_name=self._params['logging']['logdir'])
         self._logger.add_tabular_output(file_name=self._params['logging']['logdir']+"/log_data.csv")
         config_snapshot = {}
@@ -231,16 +244,38 @@ class RL_Trainer(object):
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
 
+        if itr == 0:
+            if load_initial_expertdata is None:
+                raise ValueError("load_initial_expertdata cannot be None")
+            if load_initial_expertdata:
+                paths = pickle.load(open(self.params['expert_data'], 'rb'))
+                return paths, 0, None
+            else:
+                num_transitions_to_sample = self._params['alg']['batch_size_initial'] # batch_size_initial
+        else:
+            num_transitions_to_sample = self._params['alg']['batch_size']
+            
+        #     elif load_initial_expertdata is not None:
+        #         with open(load_initial_expertdata, 'rb') as f:
+        #             loaded_paths = pickle.load(f)
+        #         return loaded_paths, 0, None
+        # else:
+        #     num_transitions_to_sample = self._params['alg']['batch_size']
+            # (2) collect `self.params['batch_size']` transitions
+        # DONE collect `batch_size` samples to be used for training
+        # HINT1: use sample_trajectories from utils
+        # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
+
         print("\nCollecting data to be used for training...")
 
-        paths, envsteps_this_batch = TODO
+        paths, envsteps_this_batch = utils.sample_trajectories(self._env, collect_policy, num_transitions_to_sample, self._params['env']['max_episode_length'])
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
 
         train_video_paths = None
         if self._log_video:
             print('\nCollecting train rollouts to be used for saving videos...')
-            ## TODO look in utils and implement sample_n_trajectories
+            ## DONE look in utils and implement sample_n_trajectories
             train_video_paths = utils.sample_n_trajectories(self._env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
         return paths, envsteps_this_batch, train_video_paths
 
@@ -248,15 +283,15 @@ class RL_Trainer(object):
         print('\nTraining agent using sampled data from replay buffer...')
         all_logs = []
         for train_step in range(self._params['alg']['num_agent_train_steps_per_iter']):
-            # TODO sample some data from the data buffer
+            # DONE sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self._params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self._agent.sample(self._params['alg']['train_batch_size'])
 
-            # TODO use the sampled data to train an agent
+            # DONE use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+            train_log = self._agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -264,15 +299,15 @@ class RL_Trainer(object):
         print('\nTraining agent using sampled data from replay buffer...')
         all_logs = []
         for train_step in range(self._params['alg']['num_idm_train_steps_per_iter']):
-            # TODO sample some data from the data buffer
+            # DONE sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self._params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self._agent.sample(self._params['alg']['train_batch_size'])
 
-            # TODO use the sampled data to train an agent
+            # DONE use the sampled data to train an agent
             # HINT: use the agent's train_idm function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+            train_log = self._agent.train_idm(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -282,6 +317,8 @@ class RL_Trainer(object):
         # TODO relabel collected obsevations (from our policy) with labels from an expert policy
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
+        for path in paths:
+            path["action"] = expert_policy.get_action(path["observation"]) # take our observations and get the expert labels
         return paths
 
     ####################################
