@@ -264,9 +264,11 @@ class Logger(object):
         else:
             prefix = key
             suffix = ""
-        # print ("key: ", key)
+        print("##################")
+        print ("key: ", key)
         if isinstance(values, list) and len(values) > 0:
-            ## Hint: Make sure value is a scaler or single dimentional vector
+            print("len :", len(values))
+            ## Hint: Make sure value is a scaler or single dimensional vector
             self.record_tabular(prefix + "_Average" + suffix, np.average(values))
             self.record_tabular(prefix + "_Std" + suffix, np.std(values))
             self.record_tabular(prefix + "_Median" + suffix, np.median(values))
@@ -274,6 +276,7 @@ class Logger(object):
             self.record_tabular(prefix + "_Max" + suffix, np.max(values))
         else:
             self.record_tabular(prefix + suffix, values)
+            print("Single value of type :", type(values))
 
     def dump_tabular(self, *args, **kwargs):
         wh = kwargs.pop("write_header", None)

@@ -50,17 +50,30 @@ def merge_params(params1: dict, params2: dict) -> dict:
 
 def get_env_kwargs(env_name):
     if env_name in ['MsPacman-v0', 'PongNoFrameskip-v4']:
+        # kwargs = {
+        #     'learning_starts': 80_000,
+        #     'target_update_freq': 3_000,
+        #     'replay_buffer_size': int(1e6),
+        #     'n_iter': int(2e8),
+        #     'q_func': create_atari_q_network,
+        #     'learning_freq': 4,
+        #     'grad_norm_clipping': 10,
+        #     'input_shape': (84, 84, 1),
+        #     'env_wrappers': wrap_deepmind,
+        #     'frame_history_len': 1,
+        #     'gamma': 0.99,
+        # } # Modified
         kwargs = {
-            'learning_starts': 80_000,
-            'target_update_freq': 3_000,
-            'replay_buffer_size': int(1e6),
-            'n_iter': int(2e8),
+            'learning_starts': 50_000,
+            'target_update_freq': 10_000,
+            'replay_buffer_size': int(1e5),
+            'n_iter': int(1e6),
             'q_func': create_atari_q_network,
             'learning_freq': 4,
             'grad_norm_clipping': 10,
-            'input_shape': (84, 84, 1),
+            'input_shape': (84, 84, 4),
             'env_wrappers': wrap_deepmind,
-            'frame_history_len': 1,
+            'frame_history_len': 4,
             'gamma': 0.99,
         }
         kwargs['optimizer_spec'] = atari_optimizer(kwargs['n_iter'])
@@ -69,19 +82,34 @@ def get_env_kwargs(env_name):
     elif env_name == 'LunarLander-v3':
         def lunar_empty_wrapper(env):
             return env
+        # kwargs = {
+        #     'optimizer_spec': lander_optimizer(),
+        #     'q_func': create_lander_q_network,
+        #     'replay_buffer_size': 100_000,
+        #     'batch_size': 32,
+        #     'gamma': 0.99,
+        #     'learning_starts': 1000,
+        #     'learning_freq': 1,
+        #     'frame_history_len': 1,
+        #     'target_update_freq': 3_000,
+        #     'grad_norm_clipping': 10,
+        #     'lander': True,
+        #     'n_iter': 3_000_000,
+        #     'env_wrappers': lunar_empty_wrapper
+        # }
         kwargs = {
             'optimizer_spec': lander_optimizer(),
             'q_func': create_lander_q_network,
-            'replay_buffer_size': 100_000,
+            'replay_buffer_size': 50_000,
             'batch_size': 32,
-            'gamma': 0.99,
+            'gamma': 0.99, # actually it was originally 1.00 but kept .99 
             'learning_starts': 1000,
-            'learning_freq': 4,
+            'learning_freq': 1,
             'frame_history_len': 1,
             'target_update_freq': 3_000,
             'grad_norm_clipping': 10,
             'lander': True,
-            'n_iter': 3_000_000,
+            'n_iter': 500000,
             'env_wrappers': lunar_empty_wrapper
         }
         kwargs['exploration_schedule'] = lander_exploration_schedule(kwargs['n_iter'])

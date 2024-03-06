@@ -185,8 +185,8 @@ class ClipRewardEnv(gym.RewardWrapper):
 
     def reward(self, reward):
         """Bin reward to {+1, 0, -1} by its sign."""
-        # return np.sign(reward) # MODIFIED
-        return reward
+        return np.sign(reward) # MODIFIED
+        # return reward
 
 
 def wrap_deepmind_ram(env):
@@ -210,6 +210,6 @@ def wrap_deepmind(env):
         env = FireResetEnv(env)
     env = ProcessFrame84(env)
     # FrameStacking
-    #env = FrameStack(env, 4) 
+    env = FrameStack(env, 4) # Modified
     env = ClipRewardEnv(env)
     return env

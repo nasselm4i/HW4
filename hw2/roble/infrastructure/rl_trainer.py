@@ -138,6 +138,7 @@ class RL_Trainer(RL_Trainer):
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self._agent.sample(self._params['alg']['train_batch_size'])
             train_log = self._agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
+            print("train log", train_log)
         return all_logs
 
     ####################################
@@ -148,7 +149,7 @@ class RL_Trainer(RL_Trainer):
 
         super().perform_logging(itr, paths, eval_policy, train_video_paths, all_logs)
         
-        print('Done logging MBRL...\n\n')
+        # print('Done logging MBRL...\n\n')
 
     def log_model_predictions(self, itr, all_logs):
         # model predictions

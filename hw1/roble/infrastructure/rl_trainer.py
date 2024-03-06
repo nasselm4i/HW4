@@ -363,8 +363,8 @@ class RL_Trainer(object):
             logs["eval_returns"] = eval_returns
             logs["Train_EnvstepsSoFar"] = self._total_envsteps
             logs["TimeSinceStart"] = time.time() - self._start_time
-            last_log = training_logs[-1]  # Only use the last log for now
-            logs.update(last_log)
+            # last_log = training_logs[-1]  # Only use the last log for now
+            # logs.update(last_log)
             logs["reward"] = [path["reward"] for path in paths]
             logs["eval_reward"] = [path["reward"] for path in eval_paths]
             if itr == 0:
