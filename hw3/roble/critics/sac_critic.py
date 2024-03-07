@@ -37,38 +37,32 @@ class SACCritic(DDPGCritic):
         ac_na = ptu.from_numpy(ac_na)
         next_ob_no = ptu.from_numpy(next_ob_no)
         reward_n = ptu.from_numpy(reward_n)
-        terminal_n = ptu.from_numpy(terminal_n)
+        terminal_n = ptu.from_numpy(terminal_n).float()
 
+        # Compute the current Q-values
         qa_t_values = self._q_net(ob_no, ac_na)
         
-        # TODO compute the Q-values from the target network 
-        ## Hint: you will need to use the target policy
-        qa_tp1_values = self._q_net_target(next_ob_no, self._actor_target(next_ob_no))
+        # Generate actions and log probabilities for next observations using the actor policy
+        # Note: Since `MLPPolicyStochastic` handles tensor conversion internally within `get_action`, it's directly used here.
+        next_actions, log_prob_next = self._actor.get_action_log_prob(next_ob_no)  # Assuming this method exists or similar implementation
+        next_actions = ptu.from_numpy(next_actions)
+        
+        # Compute the Q-values for next states and actions using the target Q network
+        qa_tp1_values = self._q_net_target(next_ob_no, next_actions)
+        
+        # Entropy bonus calculation needs the log probability of next actions, 
+        # which should ideally be provided by the policy itself.
+        entropy_bonus = self._actor.entropy_coeff * log_prob_next
 
-        # TODO add the entropy term to the Q-values
-        ## Hint: you will need the use the lob_prob function from the distribution of the actor policy
-        ## Hint: use the self.hparams['alg']['sac_entropy_coeff'] value for the entropy term
-        # add the entropy term to the Q-values
-        # Assuming self._actor has a method .log_prob that computes log probabilities of actions
-        log_prob_next = self._actor.log_prob(next_ob_no, self._actor_target(next_ob_no))
-        # Assuming self.hparams is a dictionary containing hyperparameters, with 'alg' and 'sac_entropy_coeff' keys
-        entropy_coeff = self.hparams['alg']['sac_entropy_coeff']
-        qa_tp1_values_reg = qa_tp1_values - entropy_coeff * log_prob_next
+        # Compute the target values incorporating the entropy bonus
+        targets = reward_n + self._gamma * (1 - terminal_n) * (qa_tp1_values - entropy_bonus).detach()
 
-        # TODO compute targets for minimizing Bellman error
-        # HINT: as you saw in lecture, this would be:
-            #currentReward + self._gamma * qValuesOfNextTimestep * (not terminal)
-        target = reward_n + self._gamma * qa_tp1_values_reg * (not terminal_n)
-        target = target.detach()
-
-        assert qa_t_values.shape == target.shape
-        loss = self._loss(qa_t_values, target)
-
+        # Compute the loss and update the critic network
+        loss =self._loss(qa_t_values, targets)
         self._optimizer.zero_grad()
         loss.backward()
-        utils.clip_grad_value_(self._q_net.parameters(), self._grad_norm_clipping)
         self._optimizer.step()
-        self._learning_rate_scheduler.step()
+
         return {
             'Training Loss': ptu.to_numpy(loss),
         }

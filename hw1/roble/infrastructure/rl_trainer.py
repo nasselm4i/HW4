@@ -346,8 +346,9 @@ class RL_Trainer(object):
                                             video_title='eval_rollouts')
 
         # save eval metrics
-        if self._log_metrics:
+        if self._log_metrics :
             # returns, for logging
+            # print("path[reward]")
             train_returns = [path["reward"].sum() for path in paths]
             eval_returns = [eval_path["reward"].sum() for eval_path in eval_paths]
             # episode lengths, for logging
@@ -365,6 +366,18 @@ class RL_Trainer(object):
             logs["TimeSinceStart"] = time.time() - self._start_time
             # last_log = training_logs[-1]  # Only use the last log for now
             # logs.update(last_log)
+            # print(logs)
+            if len(training_logs) == 0 :
+                # print("training_logs :", len(training_logs[0]))
+                # print("training_logs :", training_logs[0])
+                training_logs = { # (Critic) Training Loss,Actor Loss, Q Predictions,Q Targets
+                        '(Critic) Training Loss': 0,
+                        'Q Predictions': 0,
+                        'Q Targets': 0,
+                        'Actor Loss': 0,
+                }
+                print("training_logs :", training_logs)
+            logs.update(training_logs)
             logs["reward"] = [path["reward"] for path in paths]
             logs["eval_reward"] = [path["reward"] for path in eval_paths]
             if itr == 0:

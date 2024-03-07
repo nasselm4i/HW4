@@ -45,13 +45,13 @@ class MLPPolicyDeterministic(MLPPolicy):
         # Forward pass through the policy to get the actions
         
         q_values = q_fun.qa_values(observations)
-        loss = -q_values.mean()
+        loss = -q_values.mean() # Loss
         
         self._optimizer.zero_grad()
         loss.backward()
         self._optimizer.step()
         
-        return {"Loss": loss.item()}
+        return {"Actor Loss": loss.item()}
     
 class MLPPolicyStochastic(MLPPolicy):
     """
@@ -65,17 +65,53 @@ class MLPPolicyStochastic(MLPPolicy):
         self.entropy_coeff = entropy_coeff
 
     def get_action(self, obs: np.ndarray) -> np.ndarray:
-        # TODO: sample actions from the gaussian distribrution given by MLPPolicy policy when providing the observations.
-        # Hint: make sure to use the reparameterization trick to sample from the distribution
-        if len(obs.shape) > 1:
+        if isinstance(obs, np.ndarray):
+            observation = obs
+            if len(obs.shape) > 1:
+                observation = obs
+            else:
+                observation = obs[None]
+            observation = ptu.from_numpy(observation)
+        elif isinstance(obs, torch.Tensor):
             observation = obs
         else:
-            observation = obs[None]
+            raise TypeError("Input must be a np.ndarray or torch.Tensor")
 
-        observation = ptu.from_numpy(observation)
-        action_distribution = self(observation)
-        action = action_distribution.rsample()  
+        action = self(observation)
+        if not self._deterministic:
+            action = action.sample()  # Use rsample() if you need gradients to flow through this operation
         return ptu.to_numpy(action)
+    
+    
+    def get_action_log_prob(self, obs: np.ndarray):
+        """
+        Generates an action for the given observation(s) and returns the action
+        and its log probability under the current policy.
+
+        Args:
+            obs (np.ndarray): The observation(s) using which the action is to be generated.
+
+        Returns:
+            np.ndarray: The action(s) sampled from the policy.
+            torch.Tensor: The log probability of the sampled action(s).
+        """
+        if isinstance(obs, np.ndarray):
+            observation = obs
+            if len(obs.shape) > 1:
+                observation = obs
+            else:
+                observation = obs[None]
+            observation = ptu.from_numpy(observation)
+        elif isinstance(obs, torch.Tensor):
+            observation = obs
+        else:
+            raise TypeError("Input must be a np.ndarray or torch.Tensor")
+
+        action_distribution = self(observation)
+        actions = action_distribution.sample()  # Sample actions
+        log_probs = action_distribution.log_prob(actions)  # Compute log probabilities
+
+        return ptu.to_numpy(actions), log_probs
         
     def update(self, observations, q_fun):
         # TODO: update the policy and return the loss
@@ -94,6 +130,6 @@ class MLPPolicyStochastic(MLPPolicy):
         self._optimizer.zero_grad()
         loss.backward()
         self._optimizer.step()
-        return {"Loss": loss.item()}
+        return {"Actor Loss": loss.item()}
     
 #####################################################

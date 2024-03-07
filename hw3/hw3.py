@@ -78,8 +78,11 @@ def my_app(cfg: DictConfig):
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
 
-    exp_name = logdir_prefix + cfg.env.exp_name + '_' + cfg.env.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
-    logdir = os.path.join(data_path, exp_name)
+    exp_name = logdir_prefix + cfg.env.exp_name + '_' + cfg.env.env_name
+    root_logdir = os.path.join(data_path, exp_name)
+    logdir = os.path.join(root_logdir, time.strftime("%d-%m-%Y_%H-%M-%S"))
+    if not(os.path.exists(root_logdir)):
+        os.makedirs(root_logdir)
     if not(os.path.exists(logdir)):
         os.makedirs(logdir)
     from omegaconf import open_dict

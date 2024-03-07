@@ -31,7 +31,7 @@ class SACAgent(DDPGAgent):
         # TODO: Take the code from DDPG Agent and make sure to remove the exploration noise
         self._replay_buffer_idx = self._replay_buffer.store_frame(self._last_obs)
         
-        action = self._actor.forward(self._last_obs) 
+        action = self._actor.get_action(self._last_obs) 
         
         # TODO take a step in the environment using the action from the policy
         # HINT1: remember that self._last_obs must always point to the newest/latest observation
@@ -42,7 +42,7 @@ class SACAgent(DDPGAgent):
         # TODO store the result of taking this action into the replay buffer
         # HINT1: see your replay buffer's `store_effect` function
         # HINT2: one of the arguments you'll need to pass in is self._replay_buffer_idx from above
-        self._replay_buffer.store_effect(self._replay_buffer_idx, action, reward, obs, done)
+        self._replay_buffer.store_effect(self._replay_buffer_idx, action, reward, done)
 
         # TODO if taking this step resulted in done, reset the env (and the latest observation)
         if done:

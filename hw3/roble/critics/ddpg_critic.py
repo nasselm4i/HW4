@@ -50,6 +50,8 @@ class DDPGCritic(BaseCritic):
         self._q_net_target.to(ptu.device)
         self._actor = actor
         self._actor_target = copy.deepcopy(actor)
+        
+        self._step_ = 0 # adding step to track some variables in the training
 
 
     def update(self, ob_no, ac_na, next_ob_no, reward_n, terminal_n):
@@ -86,22 +88,33 @@ class DDPGCritic(BaseCritic):
         # TODO compute targets for minimizing Bellman error
         # HINT: as you saw in lecture, this would be:
             #currentReward + self._gamma * qValuesOfNextTimestep * (not terminal)
+        # print("---------")
         # print("terminal_n")
         # print(terminal_n.shape)
+        # print("---------")
+        # print("q_t_values")
+        # print(q_t_values.shape)
+        # print("---------")
         # print("q_tp1_values")
         # print(q_tp1_values.shape)
-        # print("q_tp1_values")
-        # print(q_tp1_values.shape)
-        target = reward_n + self._gamma * q_tp1_values * (1 - terminal_n.float())
+        # print("---------")
+        # print("reward_n")
+        # print(reward_n.shape)
+        # print("---------")
+        
+        if self._step_ % 100 == 0:
+            print("#################")
+            print(f"Reward (from batch): {reward_n} at iteration {self._step_}")
+            print("#################")
+        self._step_ +=1
+
+        target = -reward_n + self._gamma * q_tp1_values * (1 - terminal_n)
         # print("target")
         # print(target.shape)
         target = target.detach()
-        # print("reward_n", reward_n.shape)
-        # print("q_t_values.shape == target.shape")
-        # print("q_t_values.shape", q_t_values.shape)
-
+        
         assert q_t_values.shape == target.shape
-        loss = self._loss(q_t_values, target)
+        loss = self._loss(q_t_values, target) # Loss of the Critic
 
         self._optimizer.zero_grad()
         loss.backward()
@@ -109,7 +122,7 @@ class DDPGCritic(BaseCritic):
         self._optimizer.step()
         #self._learning_rate_scheduler.step()
         return {
-            "Training Loss": ptu.to_numpy(loss),
+            "(Critic) Training Loss": ptu.to_numpy(loss).item(),
             "Q Predictions": np.mean(ptu.to_numpy(q_t_values)),
             "Q Targets": np.mean(ptu.to_numpy(target)),
             # "Policy Actions": utilss.flatten(ptu.to_numpy(ac_na)),
@@ -133,5 +146,5 @@ class DDPGCritic(BaseCritic):
         #     obs = ptu.from_numpy(obs)
         # TODO
         ## HINT: the q function take two arguments  
-        qa_values = self._q_net(obs, self._actor(obs))
+        qa_values = self._q_net(obs, self._actor(obs)).squeeze(-1)
         return qa_values

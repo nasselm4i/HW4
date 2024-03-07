@@ -98,6 +98,7 @@ class Logger(object):
         self._comet_log = None
         self._comet_experiment = comet_experiment
         self._table_printer = TerminalTablePrinter()
+        
 
     def reset(self):
         self.__init__()
@@ -264,10 +265,10 @@ class Logger(object):
         else:
             prefix = key
             suffix = ""
-        print("##################")
-        print ("key: ", key)
+        # print("##################")
+        # print ("key: ", key)
         if isinstance(values, list) and len(values) > 0:
-            print("len :", len(values))
+            # print("len :", len(values))
             ## Hint: Make sure value is a scaler or single dimensional vector
             self.record_tabular(prefix + "_Average" + suffix, np.average(values))
             self.record_tabular(prefix + "_Std" + suffix, np.std(values))
@@ -276,7 +277,7 @@ class Logger(object):
             self.record_tabular(prefix + "_Max" + suffix, np.max(values))
         else:
             self.record_tabular(prefix + suffix, values)
-            print("Single value of type :", type(values))
+            # print("Single value of type :", type(values))
 
     def dump_tabular(self, *args, **kwargs):
         wh = kwargs.pop("write_header", None)

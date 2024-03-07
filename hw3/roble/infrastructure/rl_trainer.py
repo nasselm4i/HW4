@@ -6,6 +6,7 @@ import time
 import gym
 from gym import wrappers
 import numpy as np
+import comet_ml
 import torch
 
 from hw1.roble.infrastructure import pytorch_util as ptu
@@ -90,6 +91,7 @@ class RL_Trainer(RL_Trainer):
             # decide if videos should be rendered/logged at this iteration
             if itr % self._params['logging']['video_log_freq'] == 0 and self._params['logging']['video_log_freq'] != -1:
                 self._log_video = True
+                # print("self._log_video = True")
             else:
                 self._log_video = False
 
@@ -98,6 +100,7 @@ class RL_Trainer(RL_Trainer):
                 self._log_metrics = False
             elif itr % self._params['logging']['scalar_log_freq'] == 0:
                 self._log_metrics = True
+                # print("self._log_metrics = True")
             else:
                 self._log_metrics = False
 
@@ -109,8 +112,8 @@ class RL_Trainer(RL_Trainer):
                 envsteps_this_batch = 1
                 train_video_paths = None
                 paths = None
-                if itr % print_period == 0:
-                    print("Adding one more step to the Replay_buffer")
+                # if itr % print_period == 0:
+                #     print("Adding one more step to the Replay_buffer")
             else:
                 use_batchsize = self._params['alg']['batch_size']
                 if itr==0:
@@ -124,7 +127,7 @@ class RL_Trainer(RL_Trainer):
 
 
             # add collected data to replay buffer
-            self._agent.add_to_replay_buffer(paths)
+            # self._agent.add_to_replay_buffer(paths) # useless function
 
             # train agent (using sampled data from replay buffer)
             if itr % print_period == 0:
@@ -136,9 +139,11 @@ class RL_Trainer(RL_Trainer):
             # if ((self._log_video or self._log_metrics) and 
             #     ( itr % print_period == 0) and 
             #     (len(all_logs) > 1)):
+            # if itr % print_period == 0:
+            #     print("itr % print_period == 0 : TRUE")
+            # print(f"self._log_video: {self._log_video} / self._log_metrics: {self._log_metrics} / print_period: {print_period}")
             if ((self._log_video or self._log_metrics) and 
-                ( itr % print_period == 0) and 
-                (len(all_logs) > 1)):
+                ( itr % print_period == 0)):
                 # perform logging
                 print('\nBeginning logging procedure...')
                 # if isinstance(self._agent, DQNAgent):
@@ -146,8 +151,8 @@ class RL_Trainer(RL_Trainer):
                 
                 # elif isinstance(self._agent, DDPGAgent):
                 #     self.perform_ddpg_logging(itr, all_logs)
-                self.perform_logging(itr, eval_policy, all_logs)    
-                self.perform_logging(itr, eval_policy, [])
+                # self.perform_logging(itr, eval_policy, all_logs)
+                self.perform_logging(itr, eval_policy, all_logs)
 
                 if self._params['logging']['save_params']:
                     self._agent.save('{}/agent_itr_{}.pt'.format(self._params['logging']['logdir'], itr))
@@ -162,13 +167,15 @@ class RL_Trainer(RL_Trainer):
         for train_step in range(self._params["alg"]['num_agent_train_steps_per_iter']):
             # sample some data from the data buffer
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self._agent.sample(self._params['alg']['train_batch_size'])
+            
 
             # use the sample data to train an agent
             train_log = self._agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
-            all_logs.append(train_log)
+            # all_logs.append(train_log)
+            
             # print("###################################")
             # print("train log", train_log)
-        return all_logs
+        return train_log
 
     ####################################
     ####################################
