@@ -120,6 +120,7 @@ class DDPGCritic(BaseCritic):
         loss.backward()
         utils.clip_grad_value_(self._q_net.parameters(), self._grad_norm_clipping)
         self._optimizer.step()
+<<<<<<< HEAD
         #self._learning_rate_scheduler.step()
         return {
             "(Critic) Training Loss": ptu.to_numpy(loss).item(),
@@ -128,6 +129,8 @@ class DDPGCritic(BaseCritic):
             # "Policy Actions": utilss.flatten(ptu.to_numpy(ac_na)),
             # "Actor Actions": utilss.flatten(ptu.to_numpy(self._actor(ob_no)))
         }
+=======
+>>>>>>> upstream/main
 
     def update_target_network(self):
         for target_param, param in zip(

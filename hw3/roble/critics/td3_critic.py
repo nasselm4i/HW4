@@ -17,8 +17,6 @@ class TD3Critic(DDPGCritic):
     def __init__(self, actor, **kwargs):
         super().__init__(actor, **kwargs)
         
-        
-
     def update(self, ob_no, ac_na, next_ob_no, reward_n, terminal_n):
         """
             Update the parameters of the critic.
@@ -54,13 +52,18 @@ class TD3Critic(DDPGCritic):
         target = reward_n + self.gamma * qa_tp1_values * (not terminal_n)
         target = target.detach()
 
+<<<<<<< HEAD
         assert qa_t_values.shape == target.shape
         loss = self.loss(qa_t_values, target)
+=======
+        assert q_t_values.shape == target.shape
+        loss = self._loss(q_t_values, target)
+>>>>>>> upstream/main
 
-        self.optimizer.zero_grad()
+        self._optimizer.zero_grad()
         loss.backward()
-        utils.clip_grad_value_(self.q_net.parameters(), self.grad_norm_clipping)
-        self.optimizer.step()
+        utils.clip_grad_value_(self._q_net.parameters(), self._grad_norm_clipping)
+        self._optimizer.step()
         # self.learning_rate_scheduler.step()
         return {
             "Training Loss": ptu.to_numpy(loss),

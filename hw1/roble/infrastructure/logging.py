@@ -267,8 +267,14 @@ class Logger(object):
             suffix = ""
         # print("##################")
         # print ("key: ", key)
+<<<<<<< HEAD
         if isinstance(values, list) and len(values) > 0:
             # print("len :", len(values))
+=======
+        if (isinstance(values, list) and (len(values) > 0) and 
+             True ):
+            # print ("values: ", key, values)
+>>>>>>> upstream/main
             ## Hint: Make sure value is a scaler or single dimensional vector
             self.record_tabular(prefix + "_Average" + suffix, np.average(values))
             self.record_tabular(prefix + "_Std" + suffix, np.std(values))

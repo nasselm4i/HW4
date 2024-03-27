@@ -54,15 +54,33 @@ class SACCritic(DDPGCritic):
         # which should ideally be provided by the policy itself.
         entropy_bonus = self._actor.entropy_coeff * log_prob_next
 
+<<<<<<< HEAD
         # Compute the target values incorporating the entropy bonus
         targets = reward_n + self._gamma * (1 - terminal_n) * (qa_tp1_values - entropy_bonus).detach()
+=======
+        # TODO add the entropy term to the Q-values
+        ## Hint: you will need the use the lob_prob function from the distribution of the actor policy
+        ## Hint: use the self.hparams['alg']['sac_entropy_coeff'] value for the entropy term
+        qa_tp1_values_reg = TODO
+
+        # TODO compute targets for minimizing Bellman error
+        # HINT: as you saw in lecture, this would be:
+            #currentReward + self._gamma * qValuesOfNextTimestep * (not terminal)
+        target = TODO
+        target = target.detach()
+
+        loss = self._loss(q_t_values, target)
+>>>>>>> upstream/main
 
         # Compute the loss and update the critic network
         loss =self._loss(qa_t_values, targets)
         self._optimizer.zero_grad()
         loss.backward()
         self._optimizer.step()
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/main
         return {
             'Training Loss': ptu.to_numpy(loss),
         }

@@ -209,7 +209,10 @@ def wrap_deepmind(env):
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
     env = ProcessFrame84(env)
+<<<<<<< HEAD
     # FrameStacking
     env = FrameStack(env, 4) # Modified
+=======
+>>>>>>> upstream/main
     env = ClipRewardEnv(env)
     return env

@@ -39,9 +39,13 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
         if done or steps > max_path_length:
             terminals.append(1)
             break
+<<<<<<< HEAD
         else:
             terminals.append(0)
     return Path(obs, image_obs, acs, rewards, next_obs, terminals)
+=======
+    return Path(obs, image_obs, acs, rewards, next_obs, terminals, infos)
+>>>>>>> upstream/main
 
 def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array')):
     """
@@ -79,7 +83,7 @@ def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, ren
 ############################################
 ############################################
 
-def Path(obs, image_obs, acs, rewards, next_obs, terminals):
+def Path(obs, image_obs, acs, rewards, next_obs, terminals, infos):
     """
         Take info (separate arrays) from a single rollout
         and return it in a single dictionary
@@ -91,7 +95,8 @@ def Path(obs, image_obs, acs, rewards, next_obs, terminals):
             "reward" : np.array(rewards, dtype=np.float32),
             "action" : np.array(acs, dtype=np.float32),
             "next_observation": np.array(next_obs, dtype=np.float32),
-            "terminal": np.array(terminals, dtype=np.float32)}
+            "terminal": np.array(terminals, dtype=np.float32),
+            "infos": infos}
 
 
 def convert_listofrollouts(paths, concat_rew=True):

@@ -2,13 +2,19 @@ env:
     env_name: 'HalfCheetah-v2' # ['LunarLander-v3', 'MsPacman-v0', 'HalfCheetah-v2', 'CartPole-v0']
     max_episode_length: 200
     exp_name: 'todo'
-    atari: True
+    atari: False
 
 alg:
     double_q: False
+<<<<<<< HEAD
     batch_size: 256 ## The min amount of experience to collect before a training update
     train_batch_size: 256 ## training batch size used for computing gradients of q function or policy
     eval_batch_size: 4096 ## How much experience should be collected over the environment to evaluate the average reward of a policy
+=======
+    batch_size: 64 ## The min amount of experience to collect before a training update
+    train_batch_size: 64 ## training batch size used for computing gradients of q function or policy
+    eval_batch_size: 1000 ## How much experience should be collected over the environment to evaluate the average reward of a policy
+>>>>>>> upstream/main
     num_agent_train_steps_per_iter: 2 ## Number of training updates after #batch_size experience is collected. 
     num_critic_updates_per_agent_update: 2 ## Number of training updates after #batch_size experience is collected.
     use_gpu: True
@@ -29,9 +35,15 @@ alg:
     batch_size_initial: 0 # do not modify
     discrete: True
     grad_norm_clipping: True
+<<<<<<< HEAD
     n_iter: 1_000_000
     polyak_avg: 0.1 #
     td3_target_policy_noise: 0.1 #
+=======
+    n_iter: 50_000_000
+    polyak_avg: 0.01 #
+    td3_target_policy_noise: 0.05 #
+>>>>>>> upstream/main
     td3_target_policy_noise_clip: 0.1 #
     entropy_coeff: 0.2 ## SAC entropy coeff
     policy_std: 0.1
@@ -43,8 +55,9 @@ alg:
         output_activation: "identity"
 
 logging:
-    video_log_freq: 50000 # How often to generate a video to log/
+    video_log_freq: -1 # How often to generate a video to log/
     scalar_log_freq: 10000 # How often to log training information and run evaluation during training.
     save_params: false # Should the parameters given to the script be saved? (Always...)
     random_seed: 1234
     logdir: ""
+    debug: false
